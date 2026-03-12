@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}AI Tutor — LearnMate AI{% endblock %}
+{% block page_title %}💬 AI Tutor{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <h1>Ask Your AI Tutor</h1>
+  <p>Get clear, structured explanations with examples on anything you're learning.</p>
+</div>
+
+<div class="form-card">
+  <form method="POST" action="{{ url_for('tutor') }}" id="tutorForm">
+    <div class="form-group">
+      <label for="subject_context">Subject Context (optional)</label>
+      <input type="text" id="subject_context" name="subject_context"
+             placeholder="e.g., Python, Biology, History..."
+             list="subjectList" />
+      <datalist id="subjectList">
+        {% for s in subjects %}<option value="{{ s }}">{% endfor %}
+      </datalist>
+    </div>
+    <div class="form-group">
+      <label for="question">Your Question</label>
+      <textarea id="question" name="question" rows="4"
+                placeholder="e.g., What is recursion and how does it work? Explain it with a simple example.">{{ question }}</textarea>
+    </div>
+    <button type="submit" class="btn-primary" id="submitBtn">
+      <span class="btn-icon">✦</span> Ask Tutor
+    </button>
+  </form>
+</div>
+
+{% if error %}
+<div class="alert alert-error">⚠️ {{ error }}</div>
+{% endif %}
+
+{% if response %}
+<div class="result-section tutor-result">
+  <div class="result-header">
+    <div class="tutor-avatar">🤖</div>
+    <div>
+      <h2>Tutor's Answer</h2>
+      <p class="result-overview">{{ response.question }}</p>
+    </div>
+  </div>
+
+  <div class="tutor-body">
+    <div class="tutor-explanation">
+      {{ response.explanation | replace('\n', '<br>') | safe }}
+    </div>
+
+    {% if response.key_points %}
+    <div class="tutor-section">
+      <h4>🔑 Key Points</h4>
+      <ul class="key-points-list">
+        {% for pt in response.key_points %}
+        <li>{{ pt }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if response.example %}
+    <div class="tutor-example-box">
+      <div class="example-label">💡 Real-World Example</div>
+      <p>{{ response.example }}</p>
+    </div>
+    {% endif %}
+
+    {% if response.follow_up_topics %}
+    <div class="tutor-section">
+      <h4>🚀 Explore Next</h4>
+      <div class="follow-up-chips">
+        {% for topic in response.follow_up_topics %}
+        <a href="{{ url_for('tutor') }}?q={{ topic }}" class="follow-chip">{{ topic }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('tutorForm').addEventListener('submit', function() {
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = '⏳ Thinking...';
+  btn.disabled = true;
+});
+
+// Pre-fill question from URL param
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('q')) {
+  document.getElementById('question').value = urlParams.get('q');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Study Plan — LearnMate AI{% endblock %}
+{% block page_title %}📚 Study Plan Generator{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <h1>Personalized Study Plan</h1>
+  <p>Tell us what you want to learn and we'll build a structured day-by-day roadmap just for you.</p>
+</div>
+
+<div class="form-card">
+  <form method="POST" action="{{ url_for('study_plan') }}" id="planForm">
+    <div class="form-grid">
+      <div class="form-group full-width">
+        <label for="subject">Subject / Topic</label>
+        <input type="text" id="subject" name="subject" placeholder="e.g., Python Programming, Machine Learning, Calculus..."
+               value="{{ form_data.get('subject', '') }}" required />
+      </div>
+      <div class="form-group">
+        <label for="level">Skill Level</label>
+        <select id="level" name="level">
+          <option value="Beginner" {% if form_data.get('level') == 'Beginner' %}selected{% endif %}>🟢 Beginner</option>
+          <option value="Intermediate" {% if form_data.get('level') == 'Intermediate' %}selected{% endif %}>🟡 Intermediate</option>
+          <option value="Advanced" {% if form_data.get('level') == 'Advanced' %}selected{% endif %}>🔴 Advanced</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="days">Study Duration (days)</label>
+        <input type="number" id="days" name="days" min="3" max="30" value="{{ form_data.get('days', '7') }}" required />
+      </div>
+    </div>
+    <button type="submit" class="btn-primary" id="submitBtn">
+      <span class="btn-icon">✦</span> Generate My Study Plan
+    </button>
+  </form>
+</div>
+
+{% if error %}
+<div class="alert alert-error">⚠️ {{ error }}</div>
+{% endif %}
+
+{% if plan %}
+<div class="result-section">
+  <div class="result-header">
+    <div>
+      <h2>{{ plan.subject }} — {{ plan.level }} Level</h2>
+      <p class="result-overview">{{ plan.overview }}</p>
+    </div>
+    <div class="plan-meta">
+      <span class="meta-badge">{{ plan.days }} Days</span>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  {% if plan.tips %}
+  <div class="tips-row">
+    {% for tip in plan.tips %}
+    <div class="tip-chip">💡 {{ tip }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Daily Plan -->
+  <div class="timeline">
+    {% for day in plan.daily_plan %}
+    <div class="timeline-item">
+      <div class="tl-marker">
+        <div class="tl-day">{{ day.day }}</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-header">
+          <h3>{{ day.title }}</h3>
+          <span class="tl-duration">⏱ {{ day.duration_hours }}h</span>
+        </div>
+
+        <div class="tl-sections">
+          <div class="tl-section">
+            <div class="tl-section-label">📖 Topics</div>
+            <ul>{% for t in day.topics %}<li>{{ t }}</li>{% endfor %}</ul>
+          </div>
+          <div class="tl-section">
+            <div class="tl-section-label">🎯 Activities</div>
+            <ul>{% for a in day.activities %}<li>{{ a }}</li>{% endfor %}</ul>
+          </div>
+          {% if day.resources %}
+          <div class="tl-section">
+            <div class="tl-section-label">🔗 Resources</div>
+            <ul>{% for r in day.resources %}<li>{{ r }}</li>{% endfor %}</ul>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('planForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = '⏳ Generating your plan...';
+    btn.disabled = true;
+  });
+</script>
+{% endblock %}

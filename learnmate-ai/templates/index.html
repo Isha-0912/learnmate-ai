@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — LearnMate AI{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-hero">
+  <div class="hero-text">
+    <h1>Welcome to <span class="accent">LearnMate AI</span></h1>
+    <p>Your personalized AI-powered learning companion. Generate study plans, take quizzes, ask your tutor, and track your progress — all in one place.</p>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-orb"></div>
+    <div class="hero-stat-float">
+      <span class="stat-num">∞</span>
+      <span class="stat-lbl">Topics</span>
+    </div>
+  </div>
+</div>
+
+<!-- Stats row -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-icon">📚</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ subjects|length }}</div>
+      <div class="stat-label">Subjects Tracked</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">✅</div>
+    <div class="stat-info">
+      <div class="stat-value">
+        {% set total_completed = namespace(v=0) %}
+        {% for k, v in progress.items() %}{% set total_completed.v = total_completed.v + v.completed %}{% endfor %}
+        {{ total_completed.v }}
+      </div>
+      <div class="stat-label">Days Completed</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🎯</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ progress|length }}</div>
+      <div class="stat-label">Active Plans</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🔥</div>
+    <div class="stat-info">
+      <div class="stat-value">AI</div>
+      <div class="stat-label">Powered</div>
+    </div>
+  </div>
+</div>
+
+<!-- Feature cards -->
+<h2 class="section-heading">What do you want to do today?</h2>
+<div class="feature-grid">
+
+  <a href="{{ url_for('study_plan') }}" class="feature-card card-blue">
+    <div class="feature-card-icon">📚</div>
+    <h3>Study Plan Generator</h3>
+    <p>Get a personalized day-by-day study roadmap for any subject, tailored to your skill level.</p>
+    <div class="feature-card-cta">Generate Plan →</div>
+  </a>
+
+  <a href="{{ url_for('quiz') }}" class="feature-card card-green">
+    <div class="feature-card-icon">❓</div>
+    <h3>Quiz Generator</h3>
+    <p>Test your knowledge with AI-generated multiple-choice quizzes on any topic.</p>
+    <div class="feature-card-cta">Start Quiz →</div>
+  </a>
+
+  <a href="{{ url_for('tutor') }}" class="feature-card card-amber">
+    <div class="feature-card-icon">💬</div>
+    <h3>AI Tutor</h3>
+    <p>Ask any question and get a clear, structured explanation with examples from your AI tutor.</p>
+    <div class="feature-card-cta">Ask Now →</div>
+  </a>
+
+  <a href="{{ url_for('progress') }}" class="feature-card card-purple">
+    <div class="feature-card-icon">📊</div>
+    <h3>Progress Tracker</h3>
+    <p>Visualize your learning journey, track completed days, and discover what to study next.</p>
+    <div class="feature-card-cta">View Progress →</div>
+  </a>
+
+</div>
+
+{% if progress %}
+<h2 class="section-heading">Your Active Plans</h2>
+<div class="progress-cards">
+  {% for key, p in progress.items() %}
+  {% set pct = ((p.completed / p.total) * 100)|int %}
+  <div class="progress-item-card">
+    <div class="pi-header">
+      <span class="pi-subject">{{ p.subject }}</span>
+      <span class="pi-level level-{{ p.level|lower }}">{{ p.level }}</span>
+    </div>
+    <div class="pi-bar-wrap">
+      <div class="pi-bar" style="width: {{ pct }}%"></div>
+    </div>
+    <div class="pi-foot">
+      <span>{{ p.completed }} / {{ p.total }} days</span>
+      <span>{{ pct }}%</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

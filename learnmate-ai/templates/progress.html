@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Progress — LearnMate AI{% endblock %}
+{% block page_title %}📊 Progress Tracker{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <h1>Your Learning Progress</h1>
+  <p>Track how far you've come and discover what to study next.</p>
+</div>
+
+{% if not progress_data %}
+<div class="empty-state">
+  <div class="empty-icon">📭</div>
+  <h3>No progress tracked yet</h3>
+  <p>Generate a study plan to start tracking your learning journey.</p>
+  <a href="{{ url_for('study_plan') }}" class="btn-primary">Create Study Plan</a>
+</div>
+{% else %}
+
+<div class="progress-grid">
+  {% for key, p in progress_data.items() %}
+  {% set pct = ((p.completed / p.total) * 100)|int %}
+  <div class="progress-detail-card">
+    <div class="pd-top">
+      <div class="pd-title">
+        <h3>{{ p.subject }}</h3>
+        <span class="pi-level level-{{ p.level|lower }}">{{ p.level }}</span>
+      </div>
+      <div class="pd-pct {% if pct == 100 %}complete{% endif %}">{{ pct }}%</div>
+    </div>
+
+    <div class="pd-bar-wrap">
+      <div class="pd-bar" style="width: {{ pct }}%" data-pct="{{ pct }}"></div>
+    </div>
+
+    <div class="pd-stats">
+      <div class="pd-stat">
+        <span class="pd-stat-val">{{ p.completed }}</span>
+        <span class="pd-stat-lbl">Completed</span>
+      </div>
+      <div class="pd-stat">
+        <span class="pd-stat-val">{{ p.total - p.completed }}</span>
+        <span class="pd-stat-lbl">Remaining</span>
+      </div>
+      <div class="pd-stat">
+        <span class="pd-stat-val">{{ p.total }}</span>
+        <span class="pd-stat-lbl">Total Days</span>
+      </div>
+    </div>
+
+    <div class="pd-controls">
+      <label>Update completed days:</label>
+      <div class="pd-input-row">
+        <input type="range" min="0" max="{{ p.total }}" value="{{ p.completed }}"
+               class="pd-slider" data-key="{{ key }}" oninput="updateProgress('{{ key }}', this.value, {{ p.total }})" />
+        <span class="pd-slider-val" id="val-{{ key }}">{{ p.completed }}</span>
+      </div>
+    </div>
+
+    {% if pct == 100 %}
+    <div class="completion-badge">🏆 Completed!</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="progress-actions">
+  <button class="btn-danger" onclick="if(confirm('Reset all progress?')) resetProgress()">
+    🗑️ Reset All Progress
+  </button>
+</div>
+{% endif %}
+
+{% if recommendations %}
+<div class="recommendations-section">
+  <h2 class="section-heading">🚀 Smart Recommendations</h2>
+  <p class="recs-subtitle">Based on your learning history, we suggest:</p>
+  <div class="recs-grid">
+    {% for rec in recommendations %}
+    <div class="rec-card">
+      <div class="rec-top">
+        <h4>{{ rec.topic }}</h4>
+        <span class="rec-diff diff-{{ rec.difficulty|lower }}">{{ rec.difficulty }}</span>
+      </div>
+      <p class="rec-reason">{{ rec.reason }}</p>
+      <div class="rec-foot">
+        <span class="rec-meta">📂 {{ rec.category }}</span>
+        <span class="rec-meta">⏱ ~{{ rec.estimated_hours }}h</span>
+        <a href="{{ url_for('study_plan') }}" class="rec-cta">Start →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateProgress(key, value, total) {
+  document.getElementById('val-' + key).textContent = value;
+
+  fetch('/api/update-progress', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({key: key, completed: parseInt(value)})
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      const pct = Math.round((value / total) * 100);
+      const bar = document.querySelector(`[data-key="${key}"]`).closest('.progress-detail-card').querySelector('.pd-bar');
+      bar.style.width = pct + '%';
+      bar.setAttribute('data-pct', pct);
+    }
+  });
+}
+
+function resetProgress() {
+  fetch('/api/reset-progress', {method: 'POST'})
+    .then(() => location.reload());
+}
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}LearnMate AI{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">✦</div>
+      <span>LearnMate<em>AI</em></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+        <span class="nav-icon">🏠</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('study_plan') }}" class="nav-item {% if request.endpoint == 'study_plan' %}active{% endif %}">
+        <span class="nav-icon">📚</span>
+        <span>Study Plan</span>
+      </a>
+      <a href="{{ url_for('quiz') }}" class="nav-item {% if request.endpoint == 'quiz' %}active{% endif %}">
+        <span class="nav-icon">❓</span>
+        <span>Quiz Generator</span>
+      </a>
+      <a href="{{ url_for('tutor') }}" class="nav-item {% if request.endpoint == 'tutor' %}active{% endif %}">
+        <span class="nav-icon">💬</span>
+        <span>AI Tutor</span>
+      </a>
+      <a href="{{ url_for('progress') }}" class="nav-item {% if request.endpoint == 'progress' %}active{% endif %}">
+        <span class="nav-icon">📊</span>
+        <span>Progress</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-badge">Powered by GPT</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title">{% block page_title %}LearnMate AI{% endblock %}</div>
+      <div class="topbar-right">
+        <span class="topbar-tag">🎓 Learning Dashboard</span>
+      </div>
+    </header>
+
+    <div class="page-body">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
